@@ -7,6 +7,10 @@ output: html_document
 
 [1] Write a simple R function, Z.prop.test(), that can perform one- or two-sample Z-tests for proportion data, using the following guidelines.
 
+The function should contain a check for the rules of thumb we have talked about (n∗p>5n∗p>5 and n∗(1−p)>5n∗(1−p)>5) to ensure the validity of assuming the normal distribution in both the one- and two-sample settings. If this is violated, the function should still complete but it should also print an appropriate warning message.
+
+The function should return a list containing the members Z (the test statistic), P (the appropriate p value), and CI (the two-sided CI with respect to “conf.level” around p1 in the case of a one-sample test and around p2-p1 in the case of a two-sample test). For all test alternatives (“two.sided”, “greater”, “less”), calculate symmetric CIs based on quantiles of the normal distribution rather than worrying about calculating single-limit confidence bounds.
+
 ```{r}
 
 # p1, no default == estimated sample proportion (i.e., based on your sample data)
@@ -104,36 +108,6 @@ Z.prop.test <- function(p1, n1, p2=NULL, n2=NULL, p0, alternative=c("two.sided",
 ```
 
 
-
-The function should contain a check for the rules of thumb we have talked about (n∗p>5n∗p>5 and n∗(1−p)>5n∗(1−p)>5) to ensure the validity of assuming the normal distribution in both the one- and two-sample settings. If this is violated, the function should still complete but it should also print an appropriate warning message.
-
-The function should return a list containing the members Z (the test statistic), P (the appropriate p value), and CI (the two-sided CI with respect to “conf.level” around p1 in the case of a one-sample test and around p2-p1 in the case of a two-sample test). For all test alternatives (“two.sided”, “greater”, “less”), calculate symmetric CIs based on quantiles of the normal distribution rather than worrying about calculating single-limit confidence bounds.
-
-
-```{r}
-
-#population parameter calculations
-pop_sd <- sd(height)*sqrt((length(height)-1)/(length(height)))
-pop_mean <- mean(height)
-
-#z-score calculation
-z <- (72 - pop_mean)/pop_sd
-
-p_yellow1 <- pnorm(72, pop_mean, pop_sd)    #using x, mu, and sigma
-p_yellow2 <- pnorm(z)                       #using z-score of 2.107
-
-```
-
-```{r}
-z.prop = function(p1,p2,n1,n2){
-  numerator = (p1/n1) - (p2/n2)
-  p.common = (p1+p2) / (n1+n2)
-  denominator = sqrt(p.common * (1-p.common) * (1/n1 + 1/n2))
-  z.prop.ris = numerator / denominator
-  return(z.prop.ris)
-}
-```
-
 [2] The dataset from Kamilar and Cooper has in it a large number of variables related to life history and body size. 
 
 For this exercise, the end aim is to fit a simple linear regression model to predict 
@@ -194,8 +168,7 @@ ggplot(data = d, aes(x = log(Brain_Size_Species_Mean), y = log(MaxLongevity_m)))
 
 Identify and interpret the point estimate of the slope (β1), as well as the outcome of the test associated with the hypotheses H0: β1 = 0; HA: β1 ≠ 0. Also, find a 90 percent CI for the slope (β1) parameter.
 
---> The slope, β1 is the EXPECTED CHANGE in units of y for every 1 unit of change in x. For every gram of increase in brain size, we can expect to see an increase in longevity of β1 months. 
-
+--> The slope, β1 is the EXPECTED CHANGE in units of y for every 1 unit of change in x. For every gram of increase in brain size, we can expect to see an increase in longevity of β1 months. See above for values from examples. 
 
 ```{r}
 #confidence intervals for our estimates 
@@ -208,34 +181,65 @@ ci
 ci <- confint(mI, level = 0.90)  # using the results of lm()
 ci
 
-
-ci <- predict(beta1, newdata = data.frame(weight = 150), interval = "confidence", 
-    level = 0.90)  # for a single value
-ci
-```
-
-
-
-```{r}
-
 ```
 
 Using your model, add lines for the 90 percent confidence and prediction interval bands on the plot and add a legend to differentiate between the lines.
 
-Produce a point estimate and associated 90 percent PI for the longevity of a species whose brain weight is 800 gm. Do you trust the model to predict observations accurately for this value of the explanatory variable? Why or why not?
+```{r}
 
+###### non-log model
+
+v = seq(from = 0, to = 500, by = 1)
+m = lm(data=d, MaxLongevity_m~Brain_Size_Species_Mean)
+ci = predict(m, newdata = data.frame(Brain_Size_Species_Mean = v), interval = "confidence", level = 0.90)
+pi = predict(m, newdata = data.frame(Brain_Size_Species_Mean = v), interval = "prediction", level = 0.90)
+df <- data.frame(cbind(v, ci, pi))
+names(df) <- c("Brain_Size_Species_Mean", "CIfit", "CIlwr", "CIupr", "PIfit", "PIlwr", "PIupr")
+head(df)
+
+ggplot(data = d, aes(x = Brain_Size_Species_Mean, y = MaxLongevity_m)) +
+  geom_point()+
+  geom_line(data = df, aes(x = v, y = CIfit), colour = "black", lwd = 1)+
+  geom_line(data = df, aes(x = v, y = CIlwr), colour = "blue")+
+  geom_line(data = df, aes(x = v, y = CIupr), colour = "blue")+
+  geom_line(data = df, aes(x = v, y = PIlwr), colour = "red")+
+  geom_line(data = df, aes(x = v, y = PIupr), colour = "red")+
+  annotate("text", x = 200, y = 950, label = "lm fit: y = 1.21799 * x + 248.95227")+
+  annotate("text", x = 350, y = 225, label = "red = 90% PI, blue = 90% CI")+
+  ylab("Longevity (months)")+
+  theme_bw(20) +
+  xlab("Brain size (g)")
+
+### LOG model 
+
+v = seq(from = 0, to = 7, by = 1)
+m = lm(data=d, log(MaxLongevity_m)~log(Brain_Size_Species_Mean))
+ci = predict(m, newdata = data.frame(log(Brain_Size_Species_Mean) = v), interval = "confidence", level = 0.90)
+pi = predict(m, newdata = data.frame(log(Brain_Size_Species_Mean) = v), interval = "prediction", level = 0.90)
+df <- data.frame(cbind(v, ci, pi))
+names(df) <- c("Brain_Size_Species_Mean", "CIfit", "CIlwr", "CIupr", "PIfit", "PIlwr", "PIupr")
+head(df)
+
+ggplot(data = d, aes(x = log(Brain_Size_Species_Mean), y = log(MaxLongevity_m))) +
+  geom_point()+
+  geom_line(data = df, aes(x = v, y = CIfit), colour = "black", lwd = 1)+
+  geom_line(data = df, aes(x = v, y = CIlwr), colour = "blue")+
+  geom_line(data = df, aes(x = v, y = CIupr), colour = "blue")+
+  geom_line(data = df, aes(x = v, y = PIlwr), colour = "red")+
+  geom_line(data = df, aes(x = v, y = PIupr), colour = "red")+
+  #annotate("text", x = 350, y = 225, label = "red = 90% PI, blue = 90% CI")+
+  ylab("log of longevity")+
+  theme_bw(20) +
+  xlab("log of brain size")
+```
+
+Produce a point estimate and associated 90 percent PI for the longevity of a species whose brain weight is 800 gm. 
+```{r}
+ppi <- predict(m, newdata = data.frame(Brain_Size_Species_Mean = 800), interval = "prediction", level = 0.90)  # for a single value
+ppi
+```
+Do you trust the model to predict observations accurately for this value of the explanatory variable? Why or why not?
 Looking at your two models, which do you think is better? Why?
-
-```{r}
-
-```
-
-
-```{r}
-
-```
-
-
 
 ```{r}
 
