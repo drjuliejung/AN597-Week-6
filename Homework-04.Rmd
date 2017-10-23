@@ -210,12 +210,21 @@ ggplot(data = d, aes(x = Brain_Size_Species_Mean, y = MaxLongevity_m)) +
   theme_bw(20) +
   xlab("Brain size (g)")
 
+```
+
+Produce a point estimate and associated 90 percent PI for the longevity of a species whose brain weight is 800 gm. 
+```{r}
+ppi <- predict(m, newdata = data.frame(Brain_Size_Species_Mean = 800), interval = "prediction", level = 0.90)  # for a single value
+ppi
+```
+
+```{r}
 ### LOG model 
 
 v = seq(from = 0, to = 7, by = 1)
 m = lm(data=d, log(MaxLongevity_m)~log(Brain_Size_Species_Mean))
-ci = predict(m, newdata = data.frame(log(Brain_Size_Species_Mean) = v), interval = "confidence", level = 0.90)
-pi = predict(m, newdata = data.frame(log(Brain_Size_Species_Mean) = v), interval = "prediction", level = 0.90)
+ci = predict(m, newdata = data.frame(Brain_Size_Species_Mean = v), interval = "confidence", level = 0.90)
+pi = predict(m, newdata = data.frame(Brain_Size_Species_Mean = v), interval = "prediction", level = 0.90)
 df <- data.frame(cbind(v, ci, pi))
 names(df) <- c("Brain_Size_Species_Mean", "CIfit", "CIlwr", "CIupr", "PIfit", "PIlwr", "PIupr")
 head(df)
@@ -227,33 +236,13 @@ ggplot(data = d, aes(x = log(Brain_Size_Species_Mean), y = log(MaxLongevity_m)))
   geom_line(data = df, aes(x = v, y = CIupr), colour = "blue")+
   geom_line(data = df, aes(x = v, y = PIlwr), colour = "red")+
   geom_line(data = df, aes(x = v, y = PIupr), colour = "red")+
-  #annotate("text", x = 350, y = 225, label = "red = 90% PI, blue = 90% CI")+
+  annotate("text", x = 3.5, y = 4.7, label = "red = 90% PI, blue = 90% CI")+
   ylab("log of longevity")+
   theme_bw(20) +
   xlab("log of brain size")
 ```
 
-Produce a point estimate and associated 90 percent PI for the longevity of a species whose brain weight is 800 gm. 
-```{r}
-ppi <- predict(m, newdata = data.frame(Brain_Size_Species_Mean = 800), interval = "prediction", level = 0.90)  # for a single value
-ppi
-```
 Do you trust the model to predict observations accurately for this value of the explanatory variable? Why or why not?
 Looking at your two models, which do you think is better? Why?
 
-```{r}
-
-```
-
-
-```{r}
-
-```
-
-
-
-```{r}
-
-```
-
-
+The non-log model seems like a much better fit. 
