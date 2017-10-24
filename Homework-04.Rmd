@@ -196,6 +196,10 @@ pi = predict(m, newdata = data.frame(Brain_Size_Species_Mean = v), interval = "p
 df <- data.frame(cbind(v, ci, pi))
 names(df) <- c("Brain_Size_Species_Mean", "CIfit", "CIlwr", "CIupr", "PIfit", "PIlwr", "PIupr")
 head(df)
+s <- shapiro.test(m$residuals)
+s
+plot(m)
+
 
 ggplot(data = d, aes(x = Brain_Size_Species_Mean, y = MaxLongevity_m)) +
   geom_point()+
@@ -219,6 +223,7 @@ ppi
 ```
 
 ```{r}
+
 ### LOG model 
 
 v = seq(from = 0, to = 7, by = 1)
@@ -228,6 +233,9 @@ pi = predict(m, newdata = data.frame(Brain_Size_Species_Mean = v), interval = "p
 df <- data.frame(cbind(v, ci, pi))
 names(df) <- c("Brain_Size_Species_Mean", "CIfit", "CIlwr", "CIupr", "PIfit", "PIlwr", "PIupr")
 head(df)
+s <- shapiro.test(m$residuals)
+s
+plot(m)
 
 ggplot(data = d, aes(x = log(Brain_Size_Species_Mean), y = log(MaxLongevity_m))) +
   geom_point()+
@@ -245,4 +253,8 @@ ggplot(data = d, aes(x = log(Brain_Size_Species_Mean), y = log(MaxLongevity_m)))
 Do you trust the model to predict observations accurately for this value of the explanatory variable? Why or why not?
 Looking at your two models, which do you think is better? Why?
 
-So far, the non-log model seems like a much better fit! However, my log model seems flawed - and the 0 point yields an error and the predicted and CI fits don't seem very accurate. This certainly is a factor to consider when deciding which model is the more accurate. 
+NOTE: my log model seems flawed - and the 0 point yields an error and the predicted and CI fits don't seem very accurate. This certainly is a factor to consider when deciding which model is the more accurate.. 
+
+HOWEVER, from the plot(m) results from each model, the log model seems like a much better fit! We can tell from the residual plots. The residual plot from the log model just looks like a linear relationship from the 2 variables. The output looks more normal - qqplot is more on the line. fitted values vs. square of standardized residuals looks more like a line. 
+
+Also when we ran our shapiro tests, the log model was non-significantly non-normal (i.e. normally distributed), because the P-value was 0.7404. But the non-log model was significantly non-normal (P=0.0001729). 
