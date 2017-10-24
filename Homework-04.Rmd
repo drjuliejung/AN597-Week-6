@@ -32,9 +32,9 @@ Z.prop.test <- function(p1, n1, p2=NULL, n2=NULL, p0, alternative=c("two.sided",
     p0 <- p0[OK]
   
   if (n1*p1 < 5)
-    warning("assumption is not met")
+    warning("failed one or more validity tests; i.e. assumption is not met")
   if (n1 * (1-p1) < 5)
-    warning("assumption is not met")
+    warning("failed one or more validity tests; i.e. assumption is not met")
   
   if (is.null(c(p2,n2))) {
         z <- (p1-p0)/sqrt((p0 * (1-p0)/n1))
