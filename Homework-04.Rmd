@@ -245,4 +245,4 @@ ggplot(data = d, aes(x = log(Brain_Size_Species_Mean), y = log(MaxLongevity_m)))
 Do you trust the model to predict observations accurately for this value of the explanatory variable? Why or why not?
 Looking at your two models, which do you think is better? Why?
 
-The non-log model seems like a much better fit! The log model seems flawed - and the 0 point yields an error. 
+So far, the non-log model seems like a much better fit! However, my log model seems flawed - and the 0 point yields an error and the predicted and CI fits don't seem very accurate. This certainly is a factor to consider when deciding which model is the more accurate. 
